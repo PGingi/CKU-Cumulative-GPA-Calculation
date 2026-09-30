@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가톨릭관동대학교 졸업 학점 계산기</title>
+    <style>
+        :root {
+            --primary: #003366;
+            --primary-hover: #002244;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --border: #dcdfe6;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --success: #2b8a3e;
+            --danger: #c92a2a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .card-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .form-row label.row-title {
+            font-weight: 600;
+            font-size: 14px;
+            flex: 1.2;
+        }
+
+        .form-row .input-area {
+            flex: 2.8;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .sub-input-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: -5px;
+            margin-bottom: 15px;
+            display: none;
+            border: 1px dashed var(--border);
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-action {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 25px;
+            display: none;
+        }
+
+        .result-container h3 {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 8px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-card.full-width {
+            grid-column: span 2;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .summary-card.pass { border-left: 5px solid var(--success); }
+        .summary-card.fail { border-left: 5px solid var(--danger); }
+
+        .status-badge {
+            font-weight: bold;
+            font-size: 13px;
+            float: right;
+        }
+        .pass-text { color: var(--success); }
+        .fail-text { color: var(--danger); }
+
+        .requirement-list {
+            margin: 8px 0 0 20px; 
+            font-size: 14px; 
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>가톨릭관동대학교 졸업 학점 계산기</h1>
+        <p>단과대학별 맞춤형 이수 요건 시뮬레이터</p>
+    </header>
+
+    <div class="card-section">
+        <div class="section-title">1. 단과대학 및 학적 정보 설정</div>
+
+        <div class="form-row">
+            <label class="row-title" for="collegeSelect">지원 단과대학:</label>
+            <div class="input-area">
+                <select id="collegeSelect">
+                    <option value="edu">사범대학</option>
+                    <option value="trinity">트리니티융합대학 (일반대학)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="row-title" for="admissionYear">입학 학번 (입학 연도):</label>
+            <div class="input-area">
+                <select id="admissionYear">
+                    <option value="22">22학번</option>
+                    <option value="23">23학번</option>
+                    <option value="24">24학번</option>
+                    <option value="25">25학번</option>
+                    <option value="26" selected>26학번</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="row-title" for="currentGrade">현재 학년 (2026년 기준):</label>
+            <div class="input-area">
+                <select id="currentGrade">
+                    <option value="1">1학년</option>
+                    <option value="2">2학년</option>
+                    <option value="3">3학년</option>
+                    <option value="4" selected>4학년</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="row-title">복학 유무:</label>
+            <div class="input-area">
+                <div class="radio-group">
+                    <label><input type="radio" name="leaveStatus" value="no" checked onclick="toggleLeaveOptions(false)"> 아니오</label>
+                    <label><input type="radio" name="leaveStatus" value="yes" onclick="toggleLeaveOptions(true)"> 예</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="leaveOptionsBox" class="sub-input-box">
+            <div class="form-row">
+                <label class="row-title" style="font-size: 13px;" for="leaveYearSelect">복학 연도:</label>
+                <div class="input-area">
+                    <select id="leaveYearSelect">
+                        <option value="2022">2022년</option>
+                        <option value="2023">2023년</option>
+                        <option value="2024">2024년</option>
+                        <option value="2025">2025년</option>
+                        <option value="2026" selected>2026년</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom: 0;">
+                <label class="row-title" style="font-size: 13px;" for="returnGrade">복학 후 적용 학년:</label>
+                <div class="input-area">
+                    <select id="returnGrade">
+                        <option value="1">1학년</option>
+                        <option value="2">2학년</option>
+                        <option value="3">3학년</option>
+                        <option value="4">4학년</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="row-title">소단위전공 이수:</label>
+            <div class="input-area">
+                <label class="checkbox-group"><input type="checkbox" id="subMajorCheck"> 필수 이수 과정 포함 (선택 시 활성화)</label>
+            </div>
+        </div>
+
+        <div class="form-row" id="teachingRow">
+            <label class="row-title">교직 이수 여부:</label>
+            <div class="input-area">
+                <label class="checkbox-group"><input type="checkbox" id="teachingCheck"> 교직 과정 이수 (7과목 / 21학점 이상)</label>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="row-title">졸업 논문:</label>
+            <div class="input-area">
+                <div class="radio-group">
+                    <label><input type="radio" name="thesisStatus" value="done"> 제출 완료 (또는 면제)</label>
+                    <label><input type="radio" name="thesisStatus" value="none" checked> 미제출</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-section">
+        <div class="section-title">2. 성적 데이터 입력</div>
+        <p style="font-size: 13px; color: var(--text-light); margin-bottom: 10px;">
+            종합정보시스템 성적 조회 화면의 전체 내용을 복사하여 아래 칸에 붙여넣어 주세요.
+        </p>
+        <textarea id="rawGrades" placeholder="성적 복사 내용 붙여넣기..."></textarea>
+    </div>
+
+    <button class="btn-action" onclick="calculateGraduation()">졸업 요건 충족 여부 계산하기</button>
+
+    <div id="resultBox" class="result-container">
+        <h3>📊 졸업 요건 충족 판정 리포트</h3>
+        <div id="resultContent"></div>
+    </div>
+</div>
+
+<script>
+    function toggleLeaveOptions(isYes) {
+        const box = document.getElementById('leaveOptionsBox');
+        if (isYes) {
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+        }
+    }
+
+    function calculateGraduation() {
+        const college = document.getElementById('collegeSelect').value;
+        const admissionYear = document.getElementById('admissionYear').value;
+        
+        const isLeave = document.querySelector('input[name="leaveStatus"]:checked').value === 'yes';
+        const targetGrade = isLeave ? parseInt(document.getElementById('returnGrade').value) : parseInt(document.getElementById('currentGrade').value);
+
+        const isSubMajorRequired = document.getElementById('subMajorCheck').checked;
+        const isTeaching = document.getElementById('teachingCheck').checked;
+        const isThesisDone = document.querySelector('input[name="thesisStatus"]:checked').value === 'done';
+        const rawData = document.getElementById('rawGrades').value;
+
+        if (!rawData.trim()) {
+            alert('성적 데이터를 입력해주세요!');
+            return;
+        }
+
+        let totalCredits = 0;
+        let majorCredits = 0;
+        let subMajorCredits = 0;
+        let generalCredits = 0;
+        let teachingCredits = 0;
+        let electiveCredits = 0;
+
+        const lines = rawData.split('\n');
+        lines.forEach(line => {
+            if (!line.trim()) return;
+            const cols = line.split(/\s+/).filter(c => c.length > 0);
+            
+            if (cols.includes('N')) {
+                return;
+            }
+
+            let credit = 0;
+            cols.forEach(col => {
+                let num = parseFloat(col);
+                if (!isNaN(num) && num > 0 && num <= 6) {
+                    credit = num;
+                }
+            });
+
+            if (credit === 0 && line.includes('0.5')) {
+                credit = 0.5;
+            }
+
+            let type = '일반선택';
+            if (line.includes('소단위전공')) {
+                type = '소단위전공';
+            } else if (line.includes('교양')) {
+                type = '교양';
+            } else if (line.includes('교직')) {
+                type = '교직';
+            } else if (line.includes('전공')) {
+                type = '전공';
+            }
+
+            if (credit > 0) {
+                totalCredits += credit;
+
+                if (type === '소단위전공') subMajorCredits += credit;
+                else if (type === '전공') majorCredits += credit;
+                else if (type === '교양') generalCredits += credit;
+                else if (type === '교직') teachingCredits += credit;
+                else electiveCredits += credit;
+            }
+        });
+
+        const targetTotal = 130;
+        let targetMajor = (college === 'edu') ? (targetGrade <= 3 ? 58 : 69) : 40;
+        let targetGeneral = 36;
+
+        if (admissionYear === '24') targetGeneral = 32;
+        else if (admissionYear === '25' || admissionYear === '26') targetGeneral = 28;
+
+        const targetSubMajor = 9;
+
+        const isTotalPass = totalCredits >= targetTotal;
+        const isMajorPass = majorCredits >= targetMajor;
+        const isGeneralPass = generalCredits >= targetGeneral;
+        const isSubMajorPass = !isSubMajorRequired || (subMajorCredits >= targetSubMajor);
+        const teachingPass = !isTeaching || (teachingCredits >= 21);
+
+        let summaryCardsHTML = `
+            <div class="summary-card full-width ${isTotalPass ? 'pass' : 'fail'}">
+                <strong>총 이수 학점</strong>
+                <span class="status-badge ${isTotalPass ? 'pass-text' : 'fail-text'}">${isTotalPass ? '✔ 충족' : '❌ 부족'}</span>
+                <p style="margin: 8px 0 0 0; font-size: 16px;"><strong>${totalCredits}</strong> / ${targetTotal} 학점</p>
+            </div>
+
+            <div class="summary-card ${isMajorPass ? 'pass' : 'fail'}">
+                <strong>주전공 학점</strong>
+                <span class="status-badge ${isMajorPass ? 'pass-text' : 'fail-text'}">${isMajorPass ? '✔ 충족' : '❌ 부족'}</span>
+                <p style="margin: 8px 0 0 0; font-size: 16px;"><strong>${majorCredits}</strong> / ${targetMajor} 학점 이상</p>
+            </div>
+
+            <div class="summary-card ${isGeneralPass ? 'pass' : 'fail'}">
+                <strong>교양 학점</strong>
+                <span class="status-badge ${isGeneralPass ? 'pass-text' : 'fail-text'}">${isGeneralPass ? '✔ 충족' : '❌ 부족'}</span>
+                <p style="margin: 8px 0 0 0; font-size: 16px;"><strong>${generalCredits}</strong> / ${targetGeneral} 학점 이상</p>
+            </div>
+        `;
+
+        if (isSubMajorRequired) {
+            summaryCardsHTML += `
+                <div class="summary-card ${isSubMajorPass ? 'pass' : 'fail'}">
+                    <strong>소단위전공 학점</strong>
+                    <span class="status-badge ${isSubMajorPass ? 'pass-text' : 'fail-text'}">${isSubMajorPass ? '✔ 충족' : '❌ 부족'}</span>
+                    <p style="margin: 8px 0 0 0; font-size: 16px;"><strong>${subMajorCredits}</strong> / ${targetSubMajor} 학점 이상</p>
+                </div>
+            `;
+        }
+
+        if (isTeaching) {
+            summaryCardsHTML += `
+                <div class="summary-card ${teachingPass ? 'pass' : 'fail'}">
+                    <strong>교직 학점</strong>
+                    <span class="status-badge ${teachingPass ? 'pass-text' : 'fail-text'}">${teachingPass ? '✔ 충족' : '❌ 부족'}</span>
+                    <p style="margin: 8px 0 0 0; font-size: 16px;"><strong>${teachingCredits}</strong> / 21 학점 이상</p>
+                </div>
+            `;
+        }
+
+        const resultBox = document.getElementById('resultBox');
+        const resultContent = document.getElementById('resultContent');
+
+        resultBox.style.display = 'block';
+        resultContent.innerHTML = `
+            <p style="font-size: 13px; color: #555; margin-bottom: 15px;">
+                총 이수 현황 판정 결과 (기준: ${college === 'edu' ? '사범대학' : '트리니티융합대학'}, ${admissionYear}학번, ${targetGrade}학년)
+            </p>
+
+            <div class="summary-grid">
+                ${summaryCardsHTML}
+            </div>
+
+            <div style="margin-top: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                <strong>📌 추가 필수 요건 검증</strong>
+                <ul class="requirement-list">
+                    <li>소단위전공 이수 대상: <span class="${isSubMajorRequired ? (isSubMajorPass ? 'pass-text' : 'fail-text') : ''}"><strong>${isSubMajorRequired ? (isSubMajorPass ? '충족 완료' : '학점 부족 (9학점 필요)') : '해당 없음'}</strong></span></li>
+                    <li>교직 이수: <span class="${isTeaching ? (teachingPass ? 'pass-text' : 'fail-text') : ''}"><strong>${isTeaching ? (teachingPass ? '충족 (21학점 이상)' : '학점 부족 (21학점 필요)') : '해당 없음'}</strong></span></li>
+                    <li>졸업 논문: <span class="${isThesisDone ? 'pass-text' : 'fail-text'}"><strong>${isThesisDone ? '제출 완료 (통과)' : '미제출 (필수)'}</strong></span></li>
+                </ul>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
